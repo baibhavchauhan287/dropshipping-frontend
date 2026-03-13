@@ -64,21 +64,19 @@ export default function CustomerRegister() {
   return (
     <div className="min-h-screen flex">
 
-      {/* LEFT SIDE */}
-
       <div className="hidden lg:flex w-1/2 bg-gradient-to-br from-indigo-600 via-purple-600 to-indigo-800 text-white flex-col justify-center items-center px-20">
 
   <h1 className="text-5xl font-bold mb-6">
     DropShipPro
   </h1>
 
-  <p className="text-lg text-indigo-100 text-center max-w-md mb-8">
+  <p className="text-2xl text-indigo-100 text-center max-w-md mb-8">
     Create an account to enjoy a faster and better shopping experience.
   </p>
 
   {/* CUSTOMER BENEFITS */}
 
-  <div className="space-y-3 text-indigo-100 mb-10 text-sm">
+  <div className="space-y-4 text-indigo-100 mb-10 text-lg">
 
     <p>✔ Track your orders easily</p>
 
