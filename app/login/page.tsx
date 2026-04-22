@@ -2,13 +2,6 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { jwtDecode } from "jwt-decode";
-
-interface DecodedToken {
-  sub: string;
-  role: string;
-  exp: number;
-}
 
 export default function Login() {
 
@@ -23,14 +16,18 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) =>
+  // ================= HANDLE INPUT =================
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
+  };
 
+  // ================= GOOGLE LOGIN =================
   const handleGoogleLogin = () => {
     window.location.href =
       "http://localhost:8080/oauth2/authorization/google";
   };
 
+  // ================= LOGIN SUBMIT =================
   const handleSubmit = async (e: React.FormEvent) => {
 
     e.preventDefault();
@@ -41,121 +38,131 @@ export default function Login() {
 
       const res = await fetch("http://localhost:8080/api/auth/login", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include", // 🔥 IMPORTANT (cookie receive karega)
         body: JSON.stringify(form),
       });
 
-      if (!res.ok) throw new Error();
+      let data;
 
-      const data = await res.json();
+      try {
+        data = await res.json();
+      } catch {
+        throw new Error("Server error");
+      }
 
-      const accessToken = data.accessToken;
-      const refreshToken = data.refreshToken;
+      if (!res.ok) {
+        throw new Error(data?.message || "Invalid email or password");
+      }
 
-      localStorage.setItem("accessToken", accessToken);
-      localStorage.setItem("refreshToken", refreshToken);
+      if (!data.accessToken) {
+        throw new Error("Login failed: Token not received");
+      }
 
-      const decoded: DecodedToken = jwtDecode(accessToken);
+      // ================= STORE TOKEN =================
+      localStorage.setItem("accessToken", data.accessToken);
 
-      if (decoded.role === "ADMIN")
+      // ❌ REMOVED COOKIE (IMPORTANT FIX)
+
+      // ================= STORE USER =================
+      const userData = {
+        name: data.name,
+        email: data.email,
+        role: data.role,
+      };
+
+      localStorage.setItem("user", JSON.stringify(userData));
+
+      console.log("LOGIN SUCCESS:", data);
+
+      // ================= REDIRECT =================
+      if (data.role === "ROLE_ADMIN") {
         router.push("/dashboard/admin");
-      else if (decoded.role === "SUPPLIER")
+      } 
+      else if (data.role === "ROLE_SUPPLIER") {
         router.push("/dashboard/supplier");
-      else
+      } 
+      else if (data.role === "ROLE_CUSTOMER") {
         router.push("/dashboard/customer");
+      } 
+      else {
+        router.push("/");
+      }
 
-    } catch {
-      setError("Invalid email or password");
+    } catch (err: any) {
+
+      console.error("LOGIN ERROR:", err);
+      setError(err.message || "Something went wrong");
+
     } finally {
       setLoading(false);
     }
   };
 
+  // ================= UI =================
   return (
 
     <div className="min-h-screen flex">
 
       {/* LEFT SIDE */}
-
       <div className="hidden lg:flex w-1/2 bg-gradient-to-br from-indigo-600 via-purple-600 to-indigo-800 text-white flex-col justify-center items-center px-20">
 
         <h1 className="text-6xl font-bold mb-6">
-          DropShipPro
+          Arts Connect
         </h1>
 
         <p className="text-lg text-indigo-100 text-center max-w-md mb-10">
           Discover winning products, manage suppliers, and scale your
-          online business — all in one powerful platform.
+          online business, all in one powerful platform.
         </p>
-
-        <img
-          src="/dropshipping-illustration.png"
-          className="w-[420px]"
-        />
 
       </div>
 
-
-      {/* RIGHT SIDE LOGIN */}
-
+      {/* RIGHT SIDE */}
       <div className="flex w-full lg:w-1/2 items-center justify-center bg-gray-50 p-6">
 
         <div className="bg-white w-full max-w-md p-10 rounded-2xl shadow-2xl border">
 
-          <h2 className="text-3xl font-bold text-gray-900 mb-2">
+          <h2 className="text-3xl font-bold text-gray-900 mb-2 text-center">
             Welcome Back
           </h2>
 
-          <p className="text-gray-500 mb-6">
+          <p className="text-gray-500 mb-6 text-center">
             Sign in to your account
           </p>
 
-
           {/* GOOGLE LOGIN */}
-
           <button
             onClick={handleGoogleLogin}
             className="w-full border border-gray-300 p-3 rounded-lg flex items-center justify-center gap-3 hover:bg-gray-50 transition"
           >
-
             <img
               src="https://www.svgrepo.com/show/475656/google-color.svg"
               className="w-5"
             />
-
             Continue with Google
-
           </button>
 
-
           {/* DIVIDER */}
-
           <div className="flex items-center my-6">
-
             <div className="flex-grow border-t"></div>
-
-            <span className="mx-3 text-gray-400 text-sm">
-              OR
-            </span>
-
+            <span className="mx-3 text-gray-400 text-sm">OR</span>
             <div className="flex-grow border-t"></div>
-
           </div>
 
-
+          {/* ERROR */}
           {error && (
             <div className="mb-4 p-3 bg-red-100 text-red-600 rounded text-sm">
               {error}
             </div>
           )}
 
-
           {/* FORM */}
-
           <form onSubmit={handleSubmit} className="space-y-4">
 
             <div>
-
               <label className="text-sm text-gray-600">
                 Email Address
               </label>
@@ -168,12 +175,9 @@ export default function Login() {
                 required
                 className="w-full border p-3 rounded-lg mt-1 focus:ring-2 focus:ring-indigo-500 outline-none"
               />
-
             </div>
 
-
             <div>
-
               <label className="text-sm text-gray-600">
                 Password
               </label>
@@ -192,22 +196,17 @@ export default function Login() {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-3 text-sm text-gray-500"
+                  className="absolute right-4 top-4 text-sm text-gray-500"
                 >
                   {showPassword ? "Hide" : "Show"}
                 </button>
 
               </div>
-
             </div>
 
-
-            {/* OPTIONS */}
-
             <div className="flex justify-between text-sm">
-
               <label className="flex items-center gap-2">
-                <input type="checkbox"/>
+                <input type="checkbox" />
                 Remember me
               </label>
 
@@ -217,13 +216,10 @@ export default function Login() {
               >
                 Forgot password?
               </a>
-
             </div>
 
-
-            {/* LOGIN BUTTON */}
-
             <button
+              type="submit"
               disabled={loading}
               className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:opacity-90 text-white p-3 rounded-lg font-semibold transition"
             >
@@ -232,39 +228,28 @@ export default function Login() {
 
           </form>
 
-
-          {/* LINKS */}
-
           <p className="text-center text-sm mt-6">
-
             New customer?{" "}
-
             <a
               href="/register/customer"
               className="text-indigo-600 font-semibold"
             >
               Create account
             </a>
-
           </p>
 
           <p className="text-center text-sm mt-2">
-
             Want to sell products?{" "}
-
             <a
               href="/register/supplier"
               className="text-indigo-600 font-semibold"
             >
               Register as supplier
             </a>
-
           </p>
 
         </div>
-
       </div>
-
     </div>
   );
 }

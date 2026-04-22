@@ -11,7 +11,7 @@ export default function Footer() {
         {/* Brand */}
         <div>
           <h2 className="text-2xl font-bold text-white mb-4">
-            DropShip
+            Madhubani Arts Connect
           </h2>
 
           <p className="text-gray-400 text-sm leading-6">

@@ -67,7 +67,7 @@ export default function CustomerRegister() {
       <div className="hidden lg:flex w-1/2 bg-gradient-to-br from-indigo-600 via-purple-600 to-indigo-800 text-white flex-col justify-center items-center px-20">
 
   <h1 className="text-5xl font-bold mb-6">
-    DropShipPro
+    Arts Connect
   </h1>
 
   <p className="text-2xl text-indigo-100 text-center max-w-md mb-8">
@@ -88,10 +88,10 @@ export default function CustomerRegister() {
 
   </div>
 
-  <img
+  {/* <img
     src="/dropshipping-illustration.png"
     className="w-[420px]"
-  />
+  /> */}
 
 </div>
 
@@ -102,11 +102,11 @@ export default function CustomerRegister() {
 
         <div className="bg-white w-full max-w-md p-10 rounded-2xl shadow-xl border">
 
-          <h2 className="text-3xl font-bold text-gray-900 mb-2">
+          <h2 className="text-3xl font-bold text-gray-900 mb-2 text-center">
             Create Your Account
           </h2>
 
-          <p className="text-gray-500 mb-6">
+          <p className="text-gray-500 mb-6 text-center">
             Sign up to start shopping.
           </p>
 

@@ -3,6 +3,9 @@
 import { useEffect, useState, Fragment } from "react";
 import AdminLayout from "@/app/components/admin/AdminLayout";
 import axios from "axios";
+import { useRouter } from "next/navigation";
+import { getUser } from "@/utils/auth";
+
 import {
   Search,
   MoreVertical,
@@ -23,6 +26,8 @@ interface User {
 
 export default function UsersPage() {
 
+  const router = useRouter();
+
   const [users,setUsers] = useState<User[]>([]);
   const [search,setSearch] = useState("");
   const [loading,setLoading] = useState(true);
@@ -31,6 +36,14 @@ export default function UsersPage() {
   const perPage = 6;
 
   useEffect(()=>{
+
+    const user = getUser();
+
+    // ✅ FIXED ADMIN CHECK
+    if(!user || user.role !== "ROLE_ADMIN"){
+      router.push("/login");
+      return;
+    }
 
     const token = localStorage.getItem("accessToken");
 
@@ -44,9 +57,11 @@ export default function UsersPage() {
     })
     .then(res=>{
       setUsers(res.data);
-      setLoading(false);
     })
-    .catch(()=>{
+    .catch(err=>{
+      console.error(err);
+    })
+    .finally(()=>{
       setLoading(false);
     });
 
@@ -64,16 +79,16 @@ export default function UsersPage() {
     page*perPage
   );
 
+  // ✅ FIXED ROLE BADGE (NO UI CHANGE)
   const roleBadge = (role:string)=>{
 
-    if(role==="ADMIN")
+    if(role==="ROLE_ADMIN")
       return "bg-red-50 text-red-600 border border-red-200";
 
-    if(role==="SUPPLIER")
+    if(role==="ROLE_SUPPLIER")
       return "bg-yellow-50 text-yellow-700 border border-yellow-200";
 
     return "bg-green-50 text-green-700 border border-green-200";
-
   }
 
   const statusBadge = (status:string)=>{
@@ -85,7 +100,6 @@ export default function UsersPage() {
       return "bg-yellow-50 text-yellow-700 border border-yellow-200";
 
     return "bg-red-50 text-red-700 border border-red-200";
-
   }
 
   return(
@@ -189,7 +203,7 @@ Suppliers
 </p>
 
 <h2 className="text-3xl font-bold mt-2">
-{users.filter(u=>u.role==="SUPPLIER").length}
+{users.filter(u=>u.role==="ROLE_SUPPLIER").length}
 </h2>
 
 </div>
@@ -393,5 +407,4 @@ Next
     </AdminLayout>
 
   );
-
 }

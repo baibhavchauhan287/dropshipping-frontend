@@ -1,26 +1,28 @@
+"use client";
+
 import AdminSidebar from "./AdminSidebar";
 import AdminNavbar from "./AdminNavbar";
 
 export default function AdminLayout({ children }: any) {
-
   return (
+    <div className="h-screen flex overflow-hidden bg-gray-100">
 
-    <div className="flex min-h-screen bg-gray-100">
-
+      {/* SIDEBAR */}
       <AdminSidebar />
 
-      <div className="flex-1 flex flex-col">
+      {/* RIGHT SIDE */}
+      <div className="flex-1 flex flex-col overflow-hidden">
 
+        {/* NAVBAR */}
         <AdminNavbar />
 
-        <main className="p-8 flex-1">
+        {/* MAIN CONTENT (SCROLLABLE ONLY THIS PART) */}
+        <main className="flex-1 overflow-y-auto p-4 md:p-6">
           {children}
         </main>
 
       </div>
 
     </div>
-
   );
-
 }

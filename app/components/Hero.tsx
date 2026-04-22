@@ -7,12 +7,11 @@ export default function Hero() {
         <div>
 
           <h1 className="text-5xl font-bold leading-tight">
-             Dropshipping 
+             Madhubani Arts Connect
           </h1>
 
           <p className="mt-4 text-lg text-indigo-100">
-            Discover trending products from trusted suppliers
-            and build your online store today.
+            Discover trending products from trusted suppliers.
           </p>
 
           <button className="mt-6 bg-white text-indigo-600 px-6 py-3 rounded-lg font-semibold">
