@@ -4,39 +4,71 @@ import { useEffect, useState } from "react";
 import api from "@/lib/api";
 import AdminLayout from "@/app/components/admin/AdminLayout";
 
+/* ✅ TYPES */
+interface OrderItem {
+  productName: string;
+  quantity: number;
+  price: number;
+  supplierName?: string;
+  supplierEmail?: string;
+}
+
+interface Order {
+  id: number;
+  orderNumber?: string;
+  customerName?: string;
+  customerEmail?: string;
+  totalAmount: number;
+  status: string;
+  createdAt: string;
+  items: OrderItem[];
+}
+
 export default function AdminOrders() {
 
-  const [orders, setOrders] = useState([]);
-  const [filtered, setFiltered] = useState([]);
-  const [search, setSearch] = useState("");
-  const [expanded, setExpanded] = useState(null);
-  const [selectedOrder, setSelectedOrder] = useState(null);
+  /* ✅ STATE TYPES FIXED */
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [filtered, setFiltered] = useState<Order[]>([]);
+  const [search, setSearch] = useState<string>("");
+  const [expanded, setExpanded] = useState<number | null>(null);
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
 
   useEffect(() => {
     loadOrders();
   }, []);
 
   const loadOrders = async () => {
-    const res = await api.get("/api/admin/orders");
-    setOrders(res.data);
-    setFiltered(res.data);
+    try {
+      const res = await api.get("/api/admin/orders");
+      setOrders(res.data);
+      setFiltered(res.data);
+    } catch (err) {
+      console.error("Error loading orders", err);
+    }
   };
 
-  // 🔍 SEARCH
+  /* ✅ SEARCH FIX */
   useEffect(() => {
     const result = orders.filter((o) =>
-      o.customerName?.toLowerCase().includes(search.toLowerCase()) ||
-      o.orderNumber?.toLowerCase().includes(search.toLowerCase())
+      (o.customerName?.toLowerCase() || "").includes(search.toLowerCase()) ||
+      (o.orderNumber?.toLowerCase() || "").includes(search.toLowerCase())
     );
     setFiltered(result);
   }, [search, orders]);
 
-  // 📊 STATS
+  /* ✅ SAFE CALCULATIONS */
   const total = orders.length;
-  const revenue = orders.reduce((sum, o) => sum + o.totalAmount, 0);
-  const pending = orders.filter(o => o.status === "PENDING").length;
 
-  const badge = (status) => {
+  const revenue = orders.reduce(
+    (sum, o) => sum + (o.totalAmount || 0),
+    0
+  );
+
+  const pending = orders.filter(
+    (o) => o.status === "PENDING"
+  ).length;
+
+  const badge = (status: string) => {
     switch (status) {
       case "PENDING": return "bg-yellow-100 text-yellow-700";
       case "CONFIRMED": return "bg-blue-100 text-blue-700";
@@ -156,11 +188,10 @@ export default function AdminOrders() {
               <div className="bg-gray-50 p-4 border-b">
                 <h4 className="font-semibold mb-2">Products</h4>
 
-                {order.items.map((item, i) => (
+                {order.items?.map((item, i) => (
                   <div key={i} className="flex justify-between border p-2 mb-2 rounded">
                     <div>
                       {item.productName} × {item.quantity}
-                      {/* 🔥 SUPPLIER (SMALL ADD) */}
                       <p className="text-xs text-indigo-500">
                         {item.supplierName}
                       </p>
@@ -198,7 +229,6 @@ export default function AdminOrders() {
               {selectedOrder.orderNumber}
             </p>
 
-            {/* CUSTOMER */}
             <div className="mb-4">
               <p className="font-semibold">Customer</p>
               <p>{selectedOrder.customerName}</p>
@@ -207,23 +237,19 @@ export default function AdminOrders() {
               </p>
             </div>
 
-            {/* PRODUCTS */}
             <div>
               <p className="font-semibold mb-2">Products</p>
 
-              {selectedOrder.items.map((item, i) => (
+              {selectedOrder.items?.map((item, i) => (
                 <div key={i} className="flex justify-between border p-2 mb-2 rounded">
                   <div>
                     {item.productName} × {item.quantity}
-
-                    {/* 🔥 SUPPLIER INFO (NO UI CHANGE) */}
                     <p className="text-xs text-indigo-500">
                       Supplier: {item.supplierName}
                     </p>
                     <p className="text-xs text-gray-400">
                       {item.supplierEmail}
                     </p>
-
                   </div>
 
                   <div className="text-green-600">
@@ -234,7 +260,6 @@ export default function AdminOrders() {
 
             </div>
 
-            {/* TOTAL */}
             <div className="flex justify-between mt-4 font-bold text-lg">
               <span>Total</span>
               <span>₹{selectedOrder.totalAmount}</span>
