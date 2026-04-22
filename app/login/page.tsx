@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 export default function Login() {
 
   const router = useRouter();
+  const API = process.env.NEXT_PUBLIC_API_URL; // ✅ /api
 
   const [form, setForm] = useState({
     email: "",
@@ -23,8 +24,9 @@ export default function Login() {
 
   // ================= GOOGLE LOGIN =================
   const handleGoogleLogin = () => {
-    window.location.href =
-      "http://localhost:8080/oauth2/authorization/google";
+    // ❌ localhost हटाया
+    // ✅ nginx proxy से जाएगा
+    window.location.href = "/oauth2/authorization/google";
   };
 
   // ================= LOGIN SUBMIT =================
@@ -36,12 +38,14 @@ export default function Login() {
 
     try {
 
-      const res = await fetch("http://localhost:8080/api/auth/login", {
+      // ❌ localhost हटाया
+      // ✅ env use किया
+      const res = await fetch(`${API}/auth/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        credentials: "include", // 🔥 IMPORTANT (cookie receive karega)
+        credentials: "include",
         body: JSON.stringify(form),
       });
 
@@ -63,8 +67,6 @@ export default function Login() {
 
       // ================= STORE TOKEN =================
       localStorage.setItem("accessToken", data.accessToken);
-
-      // ❌ REMOVED COOKIE (IMPORTANT FIX)
 
       // ================= STORE USER =================
       const userData = {
